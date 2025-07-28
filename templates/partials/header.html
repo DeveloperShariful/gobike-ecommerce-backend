@@ -1,0 +1,84 @@
+<!-- templates/partials/header.html (FINAL VERSION) -->
+
+<div class="bg-white shadow-md">
+    <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <!-- Logo Section -->
+        <div class="flex-shrink-0">
+            <a href="/" class="text-2xl font-bold text-gray-900">
+                <!-- Check if a logo is uploaded, otherwise show store name -->
+                {% if global_settings.store_logo %}
+                    <img src="{{ global_settings.store_logo.url }}" alt="{{ global_settings.store_name }} Logo" class="h-10">
+                {% else %}
+                    {{ global_settings.store_name|default:"GoBike" }}
+                {% endif %}
+            </a>
+        </div>
+
+        <!-- Desktop Navigation (hidden on mobile) -->
+        <div class="hidden md:flex items-center space-x-6">
+            <a href="/" class="text-gray-600 hover:text-gray-900 font-medium">Home</a>
+            <a href="/shop" class="text-gray-600 hover:text-gray-900 font-medium">All Products</a>
+            <a href="#about" class="text-gray-600 hover:text-gray-900 font-medium">About</a>
+            <a href="#contact" class="text-gray-600 hover:text-gray-900 font-medium">Contact</a>
+            <a href="#faq" class="text-gray-600 hover:text-gray-900 font-medium">FAQ</a>
+        </div>
+
+        <!-- Icons and Search Section -->
+        <div class="flex items-center space-x-4">
+            <!-- Search Bar (Simple Implementation) -->
+            <div class="hidden sm:block">
+                <form action="/search" method="get" class="relative">
+                    <input type="text" name="q" placeholder="Search..." class="w-40 lg:w-64 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                    <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Account Icon -->
+            <a href="/account" class="text-gray-600 hover:text-gray-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </a>
+
+            <!-- Cart Icon with Item Count -->
+            <a href="{% url 'cart:cart_detail' %}" class="relative text-gray-600 hover:text-gray-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <!-- Mini Cart Count -->
+                {% with total_items=cart|length %}
+                    {% if total_items > 0 %}
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{{ total_items }}</span>
+                    {% endif %}
+                {% endwith %}
+            </a>
+
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-gray-600 hover:text-gray-900" id="mobile-menu-button">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Mobile Menu (hidden by default) -->
+    <div class="md:hidden hidden" id="mobile-menu">
+        <a href="/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Home</a>
+        <a href="/shop" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">All Products</a>
+        <a href="#about" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">About</a>
+        <a href="#contact" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Contact</a>
+        <a href="#faq" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">FAQ</a>
+    </div>
+
+    <!-- Simple JavaScript for Mobile Menu Toggle -->
+    <script>
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+    </script>
+</div>

@@ -4,6 +4,7 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.text import slugify
+from django.urls import reverse
 
 # --- নতুন: Tax Class Model ---
 class TaxClass(models.Model):
@@ -97,21 +98,17 @@ class Product(SEOModel):
     description = models.TextField()
     short_description = models.TextField(blank=True)
     sku = models.CharField(max_length=100, unique=True, blank=True, null=True)
-    category = models.ForeignKey(Category, related_name='products', on_delete=models.SET_NULL, null=True, blank=True)
-    tags = models.ManyToManyField(Tag, blank=True, related_name='products')
+    category = models.ForeignKey('Category', related_name='products', on_delete=models.SET_NULL, null=True, blank=True)
+    tags = models.ManyToManyField('Tag', blank=True, related_name='products')
     regular_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     
-    # --- নতুন: Tax Class ---
-    tax_class = models.ForeignKey(TaxClass, on_delete=models.SET_NULL, null=True, blank=True)
-    # -----------------------
+    tax_class = models.ForeignKey('TaxClass', on_delete=models.SET_NULL, null=True, blank=True)
 
-    stock_quantity = models.IntegerField(default=0) # IntegerField allows negative values for backorders
+    stock_quantity = models.IntegerField(default=0)
     manage_stock = models.BooleanField(default=True)
     
-    # --- নতুন: Backorder ---
     allow_backorders = models.CharField(max_length=10, choices=BACKORDER_CHOICES, default='no')
-    # -----------------------
 
     is_available = models.BooleanField(default=True)
     weight = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
@@ -124,14 +121,26 @@ class Product(SEOModel):
     cross_sell_products = models.ManyToManyField('self', blank=True, symmetrical=False, related_name='cross_sold_by')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
     class Meta:
         ordering = ['-created_at']
+        
     def save(self, *args, **kwargs):
         if not self.slug: self.slug = slugify(self.name)
         if not self.seo_title: self.seo_title = self.name
         if not self.meta_description: self.meta_description = self.short_description[:160]
         super().save(*args, **kwargs)
-    def __str__(self): return self.name
+        
+    def __str__(self): 
+        return self.name
+
+    # --- নতুন: get_absolute_url মেথড ---
+    def get_absolute_url(self):
+        """
+        Returns the canonical URL for a product instance.
+        This is used in templates with {% url 'products:product_detail' product.slug %}.
+        """
+        return reverse('products:product_detail', args=[self.slug])
 
 # ৪. প্রোডাক্ট গ্যালারি ছবি (অপরিবর্তিত)
 class ProductImage(models.Model):

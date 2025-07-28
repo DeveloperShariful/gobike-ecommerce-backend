@@ -1,0 +1,200 @@
+<!-- templates/products/product_detail.html (FINAL VERSION) -->
+
+{% extends "base.html" %}
+
+<!-- SEO Blocks -->
+{% block title %}{{ product.seo_title|default:product.name }} - {{ global_settings.store_name }}{% endblock %}
+{% block meta_description %}{{ product.meta_description|default:product.short_description|truncatewords:25 }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <!-- Image Gallery -->
+        <div>
+            <!-- Main Image -->
+            <div class="mb-4 border rounded-lg overflow-hidden">
+                <img id="main-image" src="{{ product.featured_image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+            </div>
+            <!-- Thumbnails -->
+            <div class="grid grid-cols-5 gap-2">
+                <div class="border-2 border-yellow-400 rounded-lg p-1 cursor-pointer">
+                    <img src="{{ product.featured_image.url }}" alt="Thumbnail" class="w-full h-full object-cover thumbnail-image">
+                </div>
+                {% for image in product.gallery_images.all %}
+                <div class="border rounded-lg p-1 cursor-pointer">
+                    <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" class="w-full h-full object-cover thumbnail-image">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Product Information -->
+        <div>
+            <h1 class="text-3xl lg:text-4xl font-bold mb-3">{{ product.name }}</h1>
+            
+            <!-- Price -->
+            <div class="mb-4">
+                {% if product.sale_price and product.sale_price < product.regular_price %}
+                    <span class="text-3xl font-bold text-red-600">৳{{ product.sale_price|floatformat:2 }}</span>
+                    <span class="ml-3 text-xl text-gray-500 line-through">৳{{ product.regular_price|floatformat:2 }}</span>
+                {% elif product.regular_price %}
+                    <span class="text-3xl font-bold text-gray-900">৳{{ product.regular_price|floatformat:2 }}</span>
+                {% else %}
+                    <!-- Placeholder for variable product price logic -->
+                    <span class="text-2xl font-bold text-gray-900">Price varies</span>
+                {% endif %}
+            </div>
+
+            <!-- Short Description -->
+            <div class="text-gray-600 mb-6">
+                {{ product.short_description|safe }}
+            </div>
+
+            <form action="{% url 'cart:cart_add' product.id %}" method="post">
+                {% csrf_token %}
+                <!-- Variations (if it's a variable product) -->
+                {% if product.product_type == 'variable' %}
+                <div class="space-y-4 mb-6">
+                    <!-- Example for one attribute like 'Color'. This needs to be made dynamic. -->
+                    <div>
+                        <label for="color-select" class="block text-sm font-medium text-gray-700">Color</label>
+                        <select id="color-select" name="variation_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm rounded-md">
+                            <option>Choose an option</option>
+                            {% for variation in product.variations.all %}
+                                <option value="{{ variation.id }}">
+                                    {% for attr in variation.attributes.all %}
+                                        {{ attr.value }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                    - ৳{{ variation.regular_price|floatformat:2 }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Quantity and Add to Cart Button -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center border rounded-md">
+                        <button type="button" class="px-3 py-2 text-gray-600" onclick="this.nextElementSibling.stepDown()">-</button>
+                        <input type="number" name="quantity" value="1" min="1" class="w-16 text-center border-l border-r focus:outline-none">
+                        <button type="button" class="px-3 py-2 text-gray-600" onclick="this.previousElementSibling.stepUp()">+</button>
+                    </div>
+                    <button type="submit" class="flex-1 bg-gray-800 text-white font-bold py-3 px-8 rounded-md hover:bg-gray-700 transition-colors">
+                        Add to Cart
+                    </button>
+                </div>
+            </form>
+
+            <!-- Stock Status -->
+            <div class="mt-4 text-sm text-gray-500">
+                {% if product.manage_stock %}
+                    {% if product.stock_quantity > 0 %}
+                        <span>{{ product.stock_quantity }} in stock</span>
+                    {% else %}
+                        <span class="text-red-600">Out of Stock</span>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Tabs: Description, Specifications, Reviews -->
+    <div class="mt-16">
+        <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <a href="#description" class="tab-button border-yellow-500 text-gray-900 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Description</a>
+                <a href="#specifications" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Specifications</a>
+                <a href="#reviews" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Reviews ({{ reviews.count }})</a>
+            </nav>
+        </div>
+        <div class="mt-8">
+            <div id="description" class="tab-content prose max-w-none">
+                {{ product.description|safe }}
+            </div>
+            <div id="specifications" class="tab-content hidden">
+                <ul class="list-disc list-inside">
+                    {% for spec in product.specifications.all %}
+                        <li><strong>{{ spec.name }}:</strong> {{ spec.value }}</li>
+                    {% empty %}
+                        <li>No specifications available.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div id="reviews" class="tab-content hidden">
+                <!-- Reviews will go here -->
+                <h3 class="text-xl font-semibold mb-4">Customer Reviews</h3>
+                {% for review in reviews %}
+                    <div class="border-b py-4">
+                        <div class="flex items-center mb-2">
+                            <!-- Star Rating -->
+                            <div class="flex text-yellow-400">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="ml-2 font-bold">{{ review.user.get_full_name|default:review.user.username }}</span>
+                        </div>
+                        <p class="text-gray-600">{{ review.comment }}</p>
+                    </div>
+                {% empty %}
+                    <p>No reviews yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Related Products -->
+    {% if related_products %}
+        <div class="mt-16">
+            <h2 class="text-2xl font-bold text-center mb-8">Related Products</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {% for related_product in related_products %}
+                    {% include 'partials/product_card.html' with product=related_product %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script>
+    // JavaScript for image gallery thumbnails
+    document.querySelectorAll('.thumbnail-image').forEach(item => {
+        item.addEventListener('click', event => {
+            document.getElementById('main-image').src = event.target.src;
+            // Highlight the selected thumbnail
+            document.querySelectorAll('.thumbnail-image').forEach(thumb => thumb.parentElement.classList.remove('border-yellow-400', 'border-2'));
+            event.target.parentElement.classList.add('border-yellow-400', 'border-2');
+        });
+    });
+
+    // JavaScript for tabs
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', event => {
+            event.preventDefault();
+            const targetId = button.getAttribute('href').substring(1);
+
+            // Hide all tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            
+            // Deactivate all tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('border-yellow-500', 'text-gray-900');
+                btn.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            });
+
+            // Show the target tab content
+            document.getElementById(targetId).classList.remove('hidden');
+            
+            // Activate the clicked tab button
+            button.classList.add('border-yellow-500', 'text-gray-900');
+            button.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+        });
+    });
+</script>
+{% endblock %}

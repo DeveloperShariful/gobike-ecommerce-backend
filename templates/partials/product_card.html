@@ -1,0 +1,61 @@
+<!-- templates/partials/product_card.html (FINAL VERSION) -->
+
+{% comment %}
+This template receives a 'product' object from the view 
+and displays it as a card.
+{% endcomment %}
+
+<div class="group relative bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300">
+    <a href="{% url 'products:product_detail' product.slug %}" class="block">
+        <!-- Product Image -->
+        <div class="w-full h-56 bg-gray-200 aspect-w-1 aspect-h-1 overflow-hidden">
+            {% if product.featured_image %}
+                <img src="{{ product.featured_image.url }}" alt="{{ product.name }}" class="w-full h-full object-center object-cover group-hover:opacity-75 transition-opacity">
+            {% else %}
+                <!-- Placeholder image -->
+                <div class="w-full h-full flex items-center justify-center bg-gray-100">
+                    <svg class="w-12 h-12 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    </svg>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Product Details -->
+        <div class="p-4">
+            <h3 class="text-md font-semibold text-gray-800 truncate">
+                {{ product.name }}
+            </h3>
+            
+            <!-- Price -->
+            <div class="mt-2 flex items-baseline">
+                {% if product.sale_price and product.sale_price < product.regular_price %}
+                    <p class="text-lg font-bold text-red-600">৳{{ product.sale_price|floatformat:2 }}</p>
+                    <p class="ml-2 text-sm text-gray-500 line-through">৳{{ product.regular_price|floatformat:2 }}</p>
+                {% elif product.regular_price %}
+                    <p class="text-lg font-bold text-gray-900">৳{{ product.regular_price|floatformat:2 }}</p>
+                {% else %}
+                    <!-- Handle variable product price display later if needed -->
+                    <p class="text-lg font-bold text-gray-900">View Details</p>
+                {% endif %}
+            </div>
+
+            <!-- Out of Stock Badge (Optional) -->
+            {% if product.manage_stock and product.stock_quantity <= 0 %}
+                <span class="mt-2 inline-block bg-gray-200 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Out of Stock</span>
+            {% endif %}
+        </div>
+    </a>
+    
+    <!-- Quick Add to Cart Button (Optional, can be added later) -->
+    <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+        <form action="{% url 'cart:cart_add' product.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="p-2 bg-yellow-400 rounded-full text-gray-900 hover:bg-yellow-500 shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+            </button>
+        </form>
+    </div>
+</div>

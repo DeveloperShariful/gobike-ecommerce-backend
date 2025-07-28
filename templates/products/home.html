@@ -1,0 +1,107 @@
+<!-- templates/products/home.html (FINAL VERSION) -->
+
+{% extends "base.html" %}
+{% load static %} <!-- To use static files in the future -->
+
+<!-- Override the title block from base.html -->
+{% block title %}
+    {{ page_title }}
+{% endblock %}
+
+
+<!-- Main content block -->
+{% block content %}
+    <!-- Hero Section (Simple placeholder, can be replaced with a slider later) -->
+    <div class="bg-yellow-300 text-center py-20 rounded-lg shadow-lg mb-12">
+        <h1 class="text-5xl font-extrabold text-gray-800">The Best Electric Bikes for Kids</h1>
+        <p class="text-xl text-gray-700 mt-4">High-performance, reliable, and designed for fun!</p>
+        <a href="#all-products" class="mt-8 inline-block bg-gray-800 text-white font-bold py-3 px-8 rounded-full hover:bg-gray-700 transition-transform transform hover:scale-105">
+            Shop Now
+        </a>
+    </div>
+
+    <!-- All Products Section -->
+    <section id="all-products" class="mb-16 scroll-mt-20">
+        <h2 class="text-3xl font-bold text-center mb-8">All Products</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {% for product in products %}
+                {% include 'partials/product_card.html' with product=product %}
+            {% empty %}
+                <p class="col-span-full text-center text-gray-500">No products available at the moment.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Divider -->
+    <hr class="my-16 border-t-2 border-gray-200">
+
+    <!-- About Section -->
+    <section id="about" class="mb-16 scroll-mt-20">
+        <h2 class="text-3xl font-bold text-center mb-8">About GoBike</h2>
+        <div class="max-w-3xl mx-auto text-center text-gray-600 leading-relaxed">
+            <p>
+                Welcome to GOBIKE. We are an Australian-born brand founded in 2023 by two mates/dads. Our journey began due to our kids' enthusiasm for electric balance bikes and watching them have so much fun! This motivated us to design a product that would elevate their riding experience to the next level.
+            </p>
+        </div>
+    </section>
+    
+    <!-- Divider -->
+    <hr class="my-16 border-t-2 border-gray-200">
+
+    <!-- Contact Section -->
+    <section id="contact" class="mb-16 scroll-mt-20">
+        <h2 class="text-3xl font-bold text-center mb-8">Contact Us</h2>
+        <div class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md">
+            <form action="/contact-submit" method="post">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label for="name" class="block text-gray-700 font-medium mb-2">Name</label>
+                    <input type="text" id="name" name="name" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                </div>
+                <div class="mb-4">
+                    <label for="email" class="block text-gray-700 font-medium mb-2">Email</label>
+                    <input type="email" id="email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                </div>
+                <div class="mb-6">
+                    <label for="message" class="block text-gray-700 font-medium mb-2">Message</label>
+                    <textarea id="message" name="message" rows="4" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-gray-800 text-white font-bold py-3 px-6 rounded-md hover:bg-gray-700 transition-colors">
+                    Send Message
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Divider -->
+    <hr class="my-16 border-t-2 border-gray-200">
+
+    <!-- FAQ Section -->
+    <section id="faq" class="mb-16 scroll-mt-20">
+        <h2 class="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+        <div class="max-w-3xl mx-auto space-y-4">
+            <!-- FAQ Item 1 -->
+            <details class="bg-white p-6 rounded-lg shadow cursor-pointer">
+                <summary class="font-semibold text-lg">What ages are GoBike bikes for?</summary>
+                <p class="mt-4 text-gray-600">
+                    Our bikes are designed for a wide range of ages, typically from 2 to 13 years old, depending on the model (12-inch, 16-inch, etc.). Please check the specific product page for age recommendations.
+                </p>
+            </details>
+            <!-- FAQ Item 2 -->
+            <details class="bg-white p-6 rounded-lg shadow cursor-pointer">
+                <summary class="font-semibold text-lg">How long does the battery last?</summary>
+                <p class="mt-4 text-gray-600">
+                    On a full charge, the battery typically lasts for 60-90 minutes of continuous riding, depending on the terrain and rider's weight.
+                </p>
+            </details>
+            <!-- FAQ Item 3 -->
+            <details class="bg-white p-6 rounded-lg shadow cursor-pointer">
+                <summary class="font-semibold text-lg">What is your shipping policy?</summary>
+                <p class="mt-4 text-gray-600">
+                    We offer fast and reliable shipping across Australia. Standard shipping usually takes 3-5 business days. Please visit our shipping policy page for more details.
+                </p>
+            </details>
+        </div>
+    </section>
+
+{% endblock %}

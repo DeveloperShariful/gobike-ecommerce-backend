@@ -1,0 +1,51 @@
+<!-- templates/base.html (FINAL VERSION) -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Meta Tags - Block for individual pages to override -->
+    <title>{% block title %}{{ global_settings.store_name|default:"GoBike" }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Welcome to our store!{% endblock %}">
+
+    <!-- Tailwind CSS via CDN - for rapid development -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom CSS (if needed) -->
+    <style>
+        /* You can add custom global styles here */
+        body {
+            /* Example: adding a default font */
+            /* font-family: 'Inter', sans-serif; */
+        }
+    </style>
+    
+    <!-- Block for extra head elements (e.g., specific CSS/JS for a page) -->
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header Section -->
+    <header id="site-header">
+        {% include 'partials/header.html' %}
+    </header>
+
+    <!-- Main Content Area -->
+    <main id="site-content" class="container mx-auto px-4 py-8">
+        {% block content %}
+            <!-- Page-specific content will be injected here -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer Section -->
+    <footer id="site-footer">
+        {% include 'partials/footer.html' %}
+    </footer>
+
+    <!-- Block for extra scripts at the end of the body -->
+    {% block extra_scripts %}{% endblock %}
+
+</body>
+</html>
