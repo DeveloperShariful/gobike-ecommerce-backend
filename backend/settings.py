@@ -132,7 +132,7 @@ JAZZMIN_SETTINGS = {
 STRIPE_PUBLISHABLE_KEY = 'your_stripe_publishable_key'  # <-- আপনার Stripe Publishable Key এখানে দিন
 STRIPE_SECRET_KEY = 'your_stripe_secret_key'          # <-- আপনার Stripe Secret Key এখানে দিন
 
-TRANSDIRECT_API_KEY = 'your_transdirect_api_key'      # <-- আপনার Transdirect API Key এখানে দিন
+TRANSDIRECT_API_KEY = '47252f94501e01fdfbec79e95f830203'      # <-- আপনার Transdirect API Key এখানে দিন
 
 # --- নতুন: Email Backend for Development ---
 # ইমেইল পাঠানোর বদলে কনসোলে দেখানোর জন্য
