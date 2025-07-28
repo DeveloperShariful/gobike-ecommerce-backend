@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Packing Slip #{{ order.order_id_display }}</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; padding: 20px; font-size: 14px; color: #333; }
+        .slip-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+        .header .company-details h1 { margin: 0; font-size: 24px; color: #000; }
+        .header .order-details h2 { margin: 0 0 10px 0; font-size: 20px; text-align: right; }
+        .shipping-address { margin-bottom: 30px; }
+        .shipping-address h3 { border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 0; }
+        table { width: 100%; text-align: left; border-collapse: collapse; }
+        table td, table th { padding: 10px; vertical-align: top; }
+        table thead th { background: #f4f4f4; border-bottom: 2px solid #ddd; font-weight: bold; }
+        table .item-row td { border-bottom: 1px solid #eee; }
+        .sku-column { width: 150px; }
+        .qty-column { width: 80px; text-align: center; }
+        .notes { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="slip-box">
+        <div class="header">
+            <div class="company-details">
+                <h1>{{ global_settings.organization_name|default:"GoBike" }}</h1>
+                <p>Order Packing Slip</p>
+            </div>
+            <div class="order-details">
+                <h2>Order #{{ order.order_id_display }}</h2>
+                <p>Date: {{ order.created_at|date:"F j, Y" }}</p>
+            </div>
+        </div>
+
+        <div class="shipping-address">
+            <h3>Ship To:</h3>
+            {% if order.shipping_address %}
+                <strong>{{ order.shipping_address.first_name }} {{ order.shipping_address.last_name }}</strong><br>
+                {{ order.shipping_address.address_line_1 }}<br>
+                {% if order.shipping_address.address_line_2 %}{{ order.shipping_address.address_line_2 }}<br>{% endif %}
+                {{ order.shipping_address.city }}, {{ order.shipping_address.zip_code }}<br>
+                {{ order.shipping_address.country }}<br>
+                Phone: {{ order.shipping_address.phone }}
+            {% else %}
+                Address not available.
+            {% endif %}
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th class="sku-column">SKU</th>
+                    <th>Product</th>
+                    <th class="qty-column">Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr class="item-row">
+                    <td class="sku-column">
+                        {{ item.variation.sku|default:item.product.sku|default:'N/A' }}
+                    </td>
+                    <td>
+                        {{ item.product.name if item.product else 'Deleted Product' }}
+                        {% if item.variation %}
+                            <br><small>Variation: {{ item.variation_info }}</small>
+                        {% endif %}
+                    </td>
+                    <td class="qty-column"><strong>{{ item.quantity }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        {% if order.notes.exists %}
+            <div class="notes">
+                <h3>Notes:</h3>
+                {% for note in order.notes.all %}
+                    {% if not note.is_customer_note %}
+                        <p>- {{ note.note }} (by {{ note.user.username|default:'System' }} at {{ note.created_at|date:"d M, Y H:i" }})</p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    </div>
+</body>
+</html>

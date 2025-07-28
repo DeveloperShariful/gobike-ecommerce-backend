@@ -1,0 +1,72 @@
+<!-- templates/admin/index.html -->
+
+{% extends "admin/base_site.html" %}
+{% block title %}{{ dashboard_title|default:"Dashboard" }}{% endblock %}
+
+{% block content %}
+<style>
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .stat-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .stat-card h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .stat-card .value { font-size: 24px; font-weight: bold; margin: 10px 0; }
+    .stat-card .sub-stats { font-size: 13px; color: #666; }
+    .stat-card .sub-stats p { margin: 5px 0; }
+    .list-table { width: 100%; }
+</style>
+
+<div id="content-main">
+    <h1>{{ dashboard_title|default:"Store Dashboard" }}</h1>
+    
+    <!-- Sales Statistics -->
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <h3>Sales Overview</h3>
+            <div class="value">{{ sales_stats.total }}</div>
+            <div class="sub-stats">
+                <p><strong>Today:</strong> {{ sales_stats.today }}</p>
+                <p><strong>This Week:</strong> {{ sales_stats.this_week }}</p>
+                <p><strong>This Month:</strong> {{ sales_stats.this_month }}</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <h3>Order Status</h3>
+            <div class="value">{{ order_stats.total }} Total Orders</div>
+            <div class="sub-stats">
+                <p><strong>Pending:</strong> {{ order_stats.pending }}</p>
+                <p><strong>Processing:</strong> {{ order_stats.processing }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <br><br>
+
+    <!-- Recent Activity & Low Stock -->
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <h3>Recent Orders</h3>
+            <table class="list-table">
+                {% for order in recent_orders %}
+                <tr>
+                    <td><a href="{% url 'admin:orders_order_change' order.pk %}">{{ order.order_id_display }}</a></td>
+                    <td>{{ order.created_at|date:"d M, Y" }}</td>
+                    <td style="text-align: right;">৳{{ order.total|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="stat-card">
+            <h3>Low Stock Products</h3>
+            <table class="list-table">
+                {% for product in low_stock_products %}
+                <tr>
+                    <td><a href="{% url 'admin:products_product_change' product.pk %}">{{ product.name }}</a></td>
+                    <td style="text-align: right;"><strong>{{ product.stock_quantity }}</strong> in stock</td>
+                </tr>
+                {% empty %}
+                <tr><td>No low stock products.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
