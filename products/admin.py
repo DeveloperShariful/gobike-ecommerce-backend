@@ -115,16 +115,26 @@ class ProductAdmin(ImportExportModelAdmin):
             related = list(obj.related_products.all())
             upsell = list(obj.upsell_products.all())
             cross_sell = list(obj.cross_sell_products.all())
+            
+            original_sku = obj.sku
+            
             obj.pk = None
             obj.slug = f"{obj.slug}-copy"
             obj.name = f"{obj.name} (Copy)"
+
+            if original_sku:
+                import time
+                timestamp = int(time.time() * 1000)
+                obj.sku = f"{original_sku}-copy-{timestamp}"
+            
             obj.save()
+
             obj.tags.set(tags)
             obj.related_products.set(related)
             obj.upsell_products.set(upsell)
             obj.cross_sell_products.set(cross_sell)
-
-
+            
+        self.message_user(request, f"{queryset.count()} product(s) have been successfully duplicated.")
 # ক্যাটাগরি অ্যাডমিন (SEO ফিল্ড সহ)
 @admin.register(Category)
 class CategoryAdmin(ImportExportModelAdmin):

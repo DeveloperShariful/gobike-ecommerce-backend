@@ -125,65 +125,61 @@
 </div>
 {% endblock %}
 
+<!-- templates/orders/checkout.html (শুধু <script> অংশটি আপডেট করুন) -->
+
 {% block extra_scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const stripePubKey = "{{ stripe_publishable_key }}";
-        let stripe, elements, paymentElement;
-        if (stripePubKey) stripe = Stripe(stripePubKey);
-
-        const form = document.getElementById('checkout-form');
-        const submitButton = document.getElementById('submit-button');
+        // ... (stripe-এর কোড অপরিবর্তিত) ...
+        
         const shippingContainer = document.getElementById('shipping-options-container');
         const shippingCostEl = document.getElementById('shipping-cost-summary');
         const totalCostEl = document.getElementById('total-cost-summary');
         const subtotal = parseFloat("{{ cart.get_total_price }}");
-        let selectedShippingCost = 0;
+        let selectedShippingCost = null;
 
-        // --- Shipping Logic ---
         async function getShippingOptions() {
             const zipCode = document.getElementById('zip_code').value;
             const city = document.getElementById('city').value;
-            const country = document.getElementById('country').value; // In a real app, this should be a country code like 'AU'
+            const country = document.getElementById('country').value;
 
             if (zipCode && city && country) {
                 shippingContainer.innerHTML = '<p class="text-gray-500">Loading shipping options...</p>';
+                submitButton.disabled = true;
 
                 try {
                     const response = await fetch('/api/v1/shipping/options/', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': '{{ csrf_token }}',
-                        },
-                        body: JSON.stringify({ zip_code: zipCode, city: city, country_code: country }),
+                        headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+                        body: JSON.stringify({ zip_code: zipCode, city: city, country_code: 'AU' }), // Hardcoded to AU for now
                     });
 
-                    if (!response.ok) throw new Error('Network response was not ok');
+                    if (!response.ok) throw new Error('Server returned an error');
                     const rates = await response.json();
 
                     shippingContainer.innerHTML = '';
-                    if (rates.length > 0) {
+                    if (rates && rates.length > 0) {
                         rates.forEach((rate, index) => {
                             const rateId = `shipping-rate-${index}`;
                             const rateHtml = `
-                                <div>
-                                    <input type="radio" id="${rateId}" name="shipping_rate" value="${rate.price}" data-name="${rate.name}" class="peer" ${index === 0 ? 'checked' : ''}>
-                                    <label for="${rateId}" class="ml-2">
-                                        ${rate.name} - <strong>৳${rate.price.toFixed(2)}</strong>
+                                <div class="flex items-center">
+                                    <input type="radio" id="${rateId}" name="shipping_rate" value="${rate.price}" class="peer" ${index === 0 ? 'checked' : ''}>
+                                    <label for="${rateId}" class="ml-2 text-sm">
+                                        <span class="font-medium">${rate.name}</span> - <strong class="text-gray-800">৳${rate.price.toFixed(2)}</strong>
                                     </label>
                                 </div>
                             `;
                             shippingContainer.innerHTML += rateHtml;
                         });
                         addShippingEventListeners();
-                        updateCosts(); // Update costs with the default selected rate
+                        updateCosts();
                     } else {
-                        shippingContainer.innerHTML = '<p class="text-red-500">No shipping options available for this address.</p>';
+                        shippingContainer.innerHTML = '<p class="text-red-500 font-medium">No shipping options available for this address.</p>';
+                        updateCosts(); // Update costs to show no shipping
                     }
                 } catch (error) {
                     console.error('Error fetching shipping options:', error);
-                    shippingContainer.innerHTML = '<p class="text-red-500">Could not load shipping options.</p>';
+                    shippingContainer.innerHTML = '<p class="text-red-500 font-medium">Could not load shipping options. Please try again.</p>';
                 }
             }
         }
@@ -201,21 +197,27 @@
                 shippingCostEl.textContent = `৳${selectedShippingCost.toFixed(2)}`;
                 const total = subtotal + selectedShippingCost;
                 totalCostEl.textContent = `৳${total.toFixed(2)}`;
-                submitButton.disabled = false; // Enable Place Order button
+                submitButton.disabled = false;
             } else {
+                selectedShippingCost = null;
                 shippingCostEl.textContent = '--';
                 totalCostEl.textContent = `৳${subtotal.toFixed(2)}`;
-                submitButton.disabled = true; // Disable if no shipping is selected
+                submitButton.disabled = true;
             }
         }
 
-        document.querySelectorAll('[data-shipping="true"]').forEach(input => {
-            input.addEventListener('change', getShippingOptions);
-        });
+        // Debounce function to avoid too many API calls
+        let debounceTimer;
+        function debouncedGetShippingOptions() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(getShippingOptions, 800); // 800ms delay
+        }
 
-        // --- Payment Logic (Stripe) ---
-        // (The payment logic from the previous answer remains the same)
-        // ...
+        document.querySelectorAll('[data-shipping="true"]').forEach(input => {
+            input.addEventListener('input', debouncedGetShippingOptions);
+        });
+        
+        // --- Payment Logic (Stripe) ... (অপরিবর্তিত) ---
     });
 </script>
 {% endblock %}

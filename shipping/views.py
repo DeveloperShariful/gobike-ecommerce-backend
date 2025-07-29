@@ -11,58 +11,40 @@ from .models import ShippingRate, ShippingZone
 from .transdirect import TransdirectAPI
 
 class ShippingOptionsView(APIView):
-    """
-    API view to get available shipping options for the current cart.
-    It combines manual rates from the database with real-time rates from Transdirect.
-    
-    Expects a POST request with the following JSON data:
-    {
-        "zip_code": "2570",
-        "city": "Camden South",
-        "country_code": "AU"
-    }
-    """
     def post(self, request, *args, **kwargs):
         cart = Cart(request)
         if not cart:
             return Response({"error": "Your cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # --- Extract and validate address data from the POST request ---
         address_data = {
             'zip_code': request.data.get('zip_code'),
             'city': request.data.get('city'),
             'country_code': request.data.get('country_code', 'AU'),
         }
 
-        if not all(address_data.values()):
+        if not all([address_data['zip_code'], address_data['city'], address_data['country_code']]):
             return Response({"error": "ZIP code, city, and country are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # --- 1. Get Manual Shipping Rates (Free Shipping, Flat Rate, etc.) ---
-        try:
-            manual_rates = self.get_manual_rates(cart, address_data)
-        except Exception as e:
-            # In a real app, log this error
-            print(f"Error fetching manual rates: {e}")
-            manual_rates = []
-
-        # --- 2. Get Real-time Rates from Transdirect ---
-        try:
-            transdirect_api = TransdirectAPI()
-            real_time_rates = transdirect_api.get_quotes(list(cart), address_data)
-        except Exception as e:
-            # In a real app, log this error
-            print(f"Error fetching Transdirect rates: {e}")
-            real_time_rates = []
+        # ১. ম্যানুয়াল শিপিং রেট আনা
+        manual_rates = self.get_manual_rates(cart, address_data)
         
-        # --- 3. Combine, sort, and return all rates ---
+        # ২. শুধুমাত্র API কী থাকলেই Transdirect থেকে রেট আনা
+        real_time_rates = []
+        if settings.TRANSDIRECT_API_KEY and settings.TRANSDIRECT_API_KEY != 'your_transdirect_api_key':
+            try:
+                transdirect_api = TransdirectAPI()
+                real_time_rates = transdirect_api.get_quotes(list(cart), address_data)
+            except Exception as e:
+                print(f"Transdirect API Error: {e}") # সার্ভার লগে এরর দেখা যাবে
+
+        # ৩. সব রেট একত্রিত করা
         all_rates = manual_rates + real_time_rates
         
         if not all_rates:
-            return Response({"message": "No shipping options available for this address."}, status=status.HTTP_200_OK)
+            # যদি কোনো রেটই না পাওয়া যায়
+            return Response([], status=status.HTTP_200_OK)
 
-        # Sort rates by price, lowest first
         sorted_rates = sorted(all_rates, key=lambda x: x['price'])
-        
         return Response(sorted_rates, status=status.HTTP_200_OK)
 
     def get_manual_rates(self, cart, address_data):

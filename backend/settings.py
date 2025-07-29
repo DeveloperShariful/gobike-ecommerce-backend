@@ -119,11 +119,66 @@ CORS_ALLOWED_ORIGINS = [
 CART_SESSION_ID = 'cart'
 
 # Jazzmin UI Configuration
+# backend/settings.py (শুধুমাত্র JAZZMIN_SETTINGS আপডেট করুন)
+
 JAZZMIN_SETTINGS = {
-    "site_title": "GoBike Admin", "site_header": "GoBike", "site_brand": "GoBike Dashboard",
-    "welcome_sign": "Welcome to the GoBike Admin Panel", "copyright": "GoBike Ltd.",
+    # --- General ---
+    "site_title": "GoBike Admin",
+    "site_header": "GoBike",
+    "site_brand": "GoBike Dashboard",
+    "welcome_sign": "Welcome to the GoBike Admin Panel",
+    "copyright": "GoBike Ltd.",
+    
+    # --- Search ---
     "search_model": ["products.Product", "orders.Order", "auth.User"],
-    # ... (other jazzmin settings remain the same)
+
+    # --- Top Menu ---
+    "topmenu_links": [
+        {"name": "Home", "url": "admin:index"},
+        {"name": "View Site", "url": "/", "new_window": True},
+        {"model": "products.Product"},
+    ],
+
+    # --- UI ---
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "changeform_format": "horizontal_tabs",
+    "related_modal_active": True,
+    "custom_css": None,
+    "custom_js": None,
+
+    # --- Icons ---
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "products": "fas fa-shopping-cart",
+        "products.Product": "fas fa-bicycle",
+        "products.Category": "fas fa-tags",
+        "orders": "fas fa-file-invoice-dollar",
+        "orders.Order": "fas fa-file-invoice",
+        "seo": "fas fa-chart-line",
+        "shipping": "fas fa-shipping-fast",
+        "discounts": "fas fa-percent",
+        "payments": "fas fa-credit-card",
+        "customers": "fas fa-users",
+        "site_settings": "fas fa-cogs",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+
+    # --- নতুন: Import-Export এবং অন্যান্য ফিচারের জন্য ইন্টিগ্রেশন ---
+    "language_chooser": False, # Hides the language chooser dropdown
+
+    # এটি import-export বাটনগুলোকে ফিরিয়ে আনবে
+    "changeform_format_overrides": {
+        "products.Product": "collapsible",
+        "orders.Order": "collapsible",
+    },
+
+    # এটি Django-এর ডিফল্ট অ্যাকশনগুলোকে (যেমন Duplicate Product) আরও সুন্দরভাবে দেখাবে
+    # এবং django-admin-actions-এর সাথে সামঞ্জস্যপূর্ণ
+    "actions_sticky_top": True,
 }
 
 # --- নতুন: External API Keys ---
